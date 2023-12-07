@@ -39,10 +39,11 @@ spec.loader.exec_module(_metadata)
 # Removed pinned versions of packages except where necessary. (ag@nextfusion.org)
 
 tensorflow = [
-    'tensorflow',
-    'tensorflow_probability',
+    'tensorflow~=2.9.0',
+    'tensorflow_probability~=0.17.0',
     'tensorflow_datasets',
-    'dm-launchpad[tensorflow,reverb]',
+    'dm-launchpad'
+    'dm-reverb[tensorflow]~=0.8.0',
 ]
 
 core_requirements = [
