@@ -36,12 +36,13 @@ spec.loader.exec_module(_metadata)
 # most recent stable versions of each library we'll be explicit just make make
 # sure this constraint is upheld.
 
+# Removed pinned versions of packages except where necessary. (ag@nextfusion.org)
+
 tensorflow = [
-    'tensorflow==2.8.0',
-    'tensorflow_probability==0.15.0',
-    'tensorflow_datasets==4.6.0',
-    'dm-reverb==0.7.2',
-    'dm-launchpad==0.5.2',
+    'tensorflow',
+    'tensorflow_probability',
+    'tensorflow_datasets',
+    'dm-launchpad[tensorflow,reverb]',
 ]
 
 core_requirements = [
@@ -54,10 +55,10 @@ core_requirements = [
 ]
 
 jax_requirements = [
-    'jax==0.4.3',
-    'jaxlib==0.4.3',
+    'jax',
+    'jaxlib',
     'chex',
-    'dm-haiku',
+    'dm-haiku==0.0.10',
     'flax',
     'optax',
     'rlax',
