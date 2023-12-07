@@ -42,7 +42,7 @@ tensorflow = [
     'tensorflow~=2.9.0',
     'tensorflow_probability~=0.17.0',
     'tensorflow_datasets',
-    'dm-launchpad'
+    'dm-launchpad',
     'dm-reverb[tensorflow]~=0.8.0',
 ]
 
