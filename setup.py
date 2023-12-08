@@ -39,11 +39,10 @@ spec.loader.exec_module(_metadata)
 # Removed pinned versions of packages except where necessary. (ag@nextfusion.org)
 
 tensorflow = [
-    'tensorflow~=2.9.0',
-    'tensorflow_probability~=0.17.0',
+    'tensorflow~=2.13.0',
+    'tensorflow_probability<=0.21.0',
     'tensorflow_datasets',
-    'dm-launchpad',
-    'dm-reverb[tensorflow]~=0.8.0',
+    'dm-launchpad[tensorflow,reverb] @git+https://github.com/Next-Step-Fusion/launchpad.git',
 ]
 
 core_requirements = [
