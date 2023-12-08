@@ -39,10 +39,10 @@ spec.loader.exec_module(_metadata)
 # Removed pinned versions of packages except where necessary. (ag@nextfusion.org)
 
 tensorflow = [
-    'tensorflow~=2.13.0',
-    'tensorflow_probability<=0.21.0',
+    'tensorflow~=2.8.0',
+    'tensorflow_probability<=0.16.0',
     'tensorflow_datasets',
-    'dm-launchpad[tensorflow,reverb] @git+https://github.com/Next-Step-Fusion/launchpad.git',
+    'dm-launchpad[tensorflow,reverb]',
 ]
 
 core_requirements = [
@@ -55,8 +55,8 @@ core_requirements = [
 ]
 
 jax_requirements = [
-    'jax',
-    'jaxlib',
+    'jax<0.4.0',
+    'jaxlib<0.4.0',
     'chex',
     'dm-haiku==0.0.10',
     'flax',
