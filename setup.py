@@ -80,6 +80,7 @@ envs_requirements = [
     'dm-control',
     'gym==0.25.0',
     'gym[atari]',
+    'gymnasium[box2d]',
     'pygame==2.1.0',
     'rlds',
 ]

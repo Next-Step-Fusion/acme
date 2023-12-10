@@ -28,7 +28,7 @@ RUN_DISTRIBUTED = flags.DEFINE_bool(
     'run_distributed', True, 'Should an agent be executed in a distributed '
     'way. If False, will run single-threaded.')
 ENV_NAME = flags.DEFINE_string(
-    'env_name', 'gym:HalfCheetah-v2',
+    'env_name', 'gymnasium:LunarLanderContinuous-v2',
     'What environment to run on, in the format {gym|control}:{task}, '
     'where "control" refers to the DM control suite. DM Control tasks are '
     'further split into {domain_name}:{task_name}.')
