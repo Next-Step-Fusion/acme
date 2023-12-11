@@ -39,10 +39,10 @@ spec.loader.exec_module(_metadata)
 # Removed pinned versions of packages except where necessary. (ag@nextfusion.org)
 
 tensorflow = [
-    'tensorflow~=2.8.0',
-    'tensorflow_probability<=0.16.0',
+    'tensorflow~=2.13.0',
+    'tensorflow_probability>=0.17.0,<0.22',
     'tensorflow_datasets',
-    'dm-launchpad[tensorflow,reverb]',
+    'dm-launchpad[tensorflow,reverb] @ https://github.com/ethanluoyc/launchpad/releases/download/v0.6.0rc0/dm_launchpad-0.6.0rc0-cp39-cp39-manylinux2014_x86_64.whl',
 ]
 
 core_requirements = [
@@ -55,8 +55,8 @@ core_requirements = [
 ]
 
 jax_requirements = [
-    'jax<0.4.0',
-    'jaxlib<0.4.0',
+    'jax',
+    'jaxlib',
     'chex',
     'dm-haiku==0.0.10',
     'flax',

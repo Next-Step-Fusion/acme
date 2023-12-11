@@ -1,0 +1,27 @@
+pygame==2.1.0
+gym==0.25.0
+tensorflow_probability>=0.17.0,<0.22
+bsuite
+optax
+tensorflow~=2.13.0
+dm-sonnet
+typing-extensions
+absl-py
+atari-py
+rlds
+dm-launchpad[tensorflow,reverb] @ https://github.com/ethanluoyc/launchpad/releases/download/v0.6.0rc0/dm_launchpad-0.6.0rc0-cp39-cp39-manylinux2014_x86_64.whl
+chex
+dm-tree
+dm-haiku==0.0.10
+rlax
+numpy
+jax
+trfl
+tensorflow_datasets
+dm-env
+pillow
+gym[atari]
+flax
+gymnasium[box2d]
+dm-control
+jaxlib
