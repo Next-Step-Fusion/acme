@@ -54,14 +54,14 @@ core_requirements = [
     'typing-extensions',
 ]
 
-jax_requirements = [
-    'jax<0.4.15',
-    'jaxlib',
-    'chex',
+jax_requirements = [ # pin the versions suggested by pdm for plasma_rl
+    'jax==0.4.14',
+    'jaxlib==0.4.14',
+    'chex==0.1.7',
     'dm-haiku==0.0.10',
-    'flax',
-    'optax',
-    'rlax',
+    'flax==0.7.4',
+    'optax==0.1.7',
+    'rlax==0.1.6',
 ] + tensorflow
 
 tf_requirements = [
