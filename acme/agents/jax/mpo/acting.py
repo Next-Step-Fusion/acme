@@ -17,7 +17,7 @@
 from typing import Callable, Dict, Mapping, NamedTuple, Tuple, Union
 
 from acme.agents.jax import actor_core as actor_core_lib
-from acme.agents.jax.mpo import MPOBuilder
+from acme.agents.jax.mpo import builder
 from acme.agents.jax.mpo import networks
 from acme.agents.jax.mpo import types
 from acme.core import VariableSource
@@ -93,7 +93,7 @@ def make_actor_core(mpo_networks: networks.MPONetworks,
 # Simple actor snapshotter for MPO
 def actor_snapshotter(networks: networks.MPONetworks, 
                       spec: EnvironmentSpec,
-                      agent_builder: MPOBuilder,
+                      agent_builder: builder.MPOBuilder,
                       key: jax_types.PRNGKey) -> Dict[str, Callable[[VariableSource],
                                                                        jax_types.ModelToSnapshot]]:
   def act_fn(variable_source: VariableSource) -> jax_types.ModelToSnapshot:
