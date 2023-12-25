@@ -14,12 +14,15 @@
 
 """Acting logic for the MPO agent."""
 
-from typing import Mapping, NamedTuple, Tuple, Union
+from typing import Callable, Dict, Mapping, NamedTuple, Tuple, Union
 
 from acme.agents.jax import actor_core as actor_core_lib
+from acme.agents.jax.mpo import MPOBuilder
 from acme.agents.jax.mpo import networks
 from acme.agents.jax.mpo import types
+from acme.core import VariableSource
 from acme.jax import types as jax_types
+from acme.specs import EnvironmentSpec
 import haiku as hk
 import jax
 import jax.numpy as jnp
@@ -44,9 +47,7 @@ def make_actor_core(mpo_networks: networks.MPONetworks,
     batch_size = None
     params_initial_state = mpo_networks.torso.initial_state_fn_init(
         key, batch_size)
-    core_state = mpo_networks.torso.initial_state_fn(params_initial_state,
-                                                     batch_size)
-    return ActorState(
+    core_state = mpo_networks.torso.initialmain(
         key=next_key,
         core_state=core_state,
         prev_core_state=core_state,
@@ -87,3 +88,17 @@ def make_actor_core(mpo_networks: networks.MPONetworks,
 
   return actor_core_lib.ActorCore(
       init=init, select_action=select_action, get_extras=get_extras)
+
+
+# Simple actor snapshotter for MPO
+def actor_snapshotter(networks: networks.MPONetworks, 
+                      spec: EnvironmentSpec,
+                      agent_builder: MPOBuilder,
+                      key: jax_types.PRNGKey) -> Dict[str, Callable[[VariableSource],
+                                                                       jax_types.ModelToSnapshot]]:
+  def act_fn(variable_source: VariableSource) -> jax_types.ModelToSnapshot:
+    params = variable_source.get_variables(['network'])[0]
+    policy_fn = agent_builder.make_policy(networks, spec, evaluation=True)
+    kwargs = {'observations': spec.observations.generate_value(), 'state': policy_fn.init(key)}
+    return jax_types.ModelToSnapshot(model=policy_fn.select_action, params=params, dummy_kwargs=kwargs)
+  return {'actor': act_fn}

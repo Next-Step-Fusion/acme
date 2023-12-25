@@ -14,6 +14,7 @@
 
 """MPO agent module."""
 
+from acme.agents.jax.mpo.acting import actor_snapshotter
 from acme.agents.jax.mpo.acting import ActorState
 from acme.agents.jax.mpo.acting import make_actor_core
 from acme.agents.jax.mpo.builder import MPOBuilder
