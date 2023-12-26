@@ -47,7 +47,9 @@ def make_actor_core(mpo_networks: networks.MPONetworks,
     batch_size = None
     params_initial_state = mpo_networks.torso.initial_state_fn_init(
         key, batch_size)
-    core_state = mpo_networks.torso.initialmain(
+    core_state = mpo_networks.torso.initial_state_fn(params_initial_state,
+                                                     batch_size)
+    return ActorState(
         key=next_key,
         core_state=core_state,
         prev_core_state=core_state,
