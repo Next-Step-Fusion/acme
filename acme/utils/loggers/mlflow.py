@@ -74,7 +74,7 @@ class MLFlowLogger(base.Logger):
             # but this requires explicit intervention from the calling object
             # Write files as artifacts
             if isinstance(value, os.PathLike):
-                mlflow.log_artifact(value)
+                mlflow.log_artifact(value,key)
                 del data[key]
 
         # Write the remaining data as a dict.
