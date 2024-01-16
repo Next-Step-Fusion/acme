@@ -34,8 +34,13 @@ from acme.utils.loggers.filters import NoneFilter
 from acme.utils.loggers.filters import TimeFilter
 from acme.utils.loggers.flatten import FlattenDictLogger
 from acme.utils.loggers.default import make_default_logger  # pylint: disable=g-bad-import-order
-from acme.utils.loggers.mlflow import MLFlowLogger
 from acme.utils.loggers.terminal import TerminalLogger
 from acme.utils.loggers.timestamp import TimestampLogger
+
+try:
+    import mlflow
+    from acme.utils.loggers.mlflow import MLFlowLogger
+except ImportError:
+    MLFlowLogger = None
 
 # Internal imports.

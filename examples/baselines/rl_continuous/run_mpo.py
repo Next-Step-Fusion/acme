@@ -33,6 +33,9 @@ ENV_NAME = flags.DEFINE_string(
     'where "control" refers to the DM control suite. DM Control tasks are '
     'further split into {domain_name}:{task_name}.')
 SEED = flags.DEFINE_integer('seed', 0, 'Random seed.')
+NUM_ACTORS = flags.DEFINE_integer(
+    'num_actors', 2, 
+    'Number of actors to use for experience collection.')
 NUM_STEPS = flags.DEFINE_integer(
     'num_steps', 1_000_000,
     'Number of environment steps to run the experiment for.')
@@ -78,7 +81,7 @@ def main(_):
   config = build_experiment_config()
   if RUN_DISTRIBUTED.value:
     program = experiments.make_distributed_experiment(
-        experiment=config, num_actors=4)
+        experiment=config, num_actors=NUM_ACTORS.value)
     lp.launch(program, xm_resources=lp_utils.make_xm_docker_resources(program))
   else:
     experiments.run_experiment(

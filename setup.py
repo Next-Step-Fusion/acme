@@ -79,7 +79,7 @@ envs_requirements = [
     'bsuite',
     'dm-control',
     'gym[atari]~=0.25.0',
-    'gymnasium[box2d]~=0.26.0',
+    'gymnasium[box2d]>=0.26.0',
     'pygame~=2.1.0',
     'rlds',
 ]

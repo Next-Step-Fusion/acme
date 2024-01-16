@@ -63,22 +63,24 @@ class MLFlowLogger(base.Logger):
 
         data = base.to_numpy(data)
 
+        written_keys = []
         for key, value in data.items():
             # Write numeric data as metrics
             if isinstance(
                 value, (int, float, np.float16, np.float32, np.float64)
             ) and not np.isnan(value):
                 mlflow.log_metric(key, value, step=self._step)
-                del data[key]
+                written_keys.append(key)
             # Maybe it is a better solution to pass `step` in `data` instead
             # but this requires explicit intervention from the calling object
             # Write files as artifacts
             if isinstance(value, os.PathLike):
                 mlflow.log_artifact(value,key)
-                del data[key]
+                written_keys.append(key)
 
         # Write the remaining data as a dict.
-        mlflow.log_dict(data)
+        # Not sure how fast the list comprehension is here.
+        mlflow.log_dict({k:data[k] for k in data if k not in written_keys})
 
         self._step += 1
 
