@@ -190,6 +190,8 @@ def make_control_networks(
     with_recurrence: bool = False,
     policy_layer_sizes: Sequence[int] = (256, 256, 256),
     critic_layer_sizes: Sequence[int] = (512, 512, 256),
+    policy_activation: Callable[[jnp.ndarray], jnp.ndarray] = jax.nn.elu,
+    critic_activation: Callable[[jnp.ndarray], jnp.ndarray] = jax.nn.elu,
     policy_init_scale: float = 0.7,
     critic_type: types.CriticType = types.CriticType.MIXTURE_OF_GAUSSIANS,
     mog_init_scale: float = 1e-3,  # Used by MoG critic.
@@ -212,7 +214,9 @@ def make_control_networks(
 
   def policy_fn(observation: types.NestedArray) -> tfd.Distribution:
     embedding = networks_lib.LayerNormMLP(
-        policy_layer_sizes, activate_final=True)(
+        policy_layer_sizes, 
+        activation = policy_activation,
+        activate_final=True)(
             observation)
     return networks_lib.MultivariateNormalDiagHead(
         num_dimensions, init_scale=policy_init_scale)(
@@ -224,7 +228,9 @@ def make_control_networks(
     clipped_action = networks_lib.ClipToSpec(environment_spec.actions)(action)
     inputs = jnp.concatenate([observation, clipped_action], axis=-1)
     embedding = networks_lib.LayerNormMLP(
-        critic_layer_sizes, activate_final=True)(
+        critic_layer_sizes, 
+        activation = critic_activation,
+        activate_final=True)(
             inputs)
 
     if critic_type == types.CriticType.MIXTURE_OF_GAUSSIANS:
