@@ -32,13 +32,14 @@ class MLFlowLogger(base.Logger):
     """An MLFlow logger."""
 
     def __init__(self, 
-                 base_path: Union[str, TextIO] = '~/acme',
+                 label: str = '',
                  time_delta: float = 0.,
                  add_uid: bool = True,
                  mlflow_url: str = MLFLOW_TRACKING_URL,
                  ):
         """Instantiates the logger."""
 
+        self.label = label
         self._last_log_time = time.time() - time_delta
         self._time_delta = time_delta
         self._add_uid = add_uid
@@ -69,7 +70,7 @@ class MLFlowLogger(base.Logger):
             if isinstance(
                 value, (int, float, np.float16, np.float32, np.float64)
             ) and not np.isnan(value):
-                mlflow.log_metric(key, value, step=self._step)
+                mlflow.log_metric(os.path.join(self.label,key), value, step=self._step)
                 written_keys.append(key)
             # Maybe it is a better solution to pass `step` in `data` instead
             # but this requires explicit intervention from the calling object
@@ -80,7 +81,7 @@ class MLFlowLogger(base.Logger):
 
         # Write the remaining data as a dict.
         # Not sure how fast the list comprehension is here.
-        mlflow.log_dict({k:data[k] for k in data if k not in written_keys})
+        mlflow.log_dict({k:data[k] for k in data if k not in written_keys}, os.path.join(self.label,f"data_{self._step}.json"))
 
         self._step += 1
 
