@@ -276,5 +276,5 @@ def _disable_insert_blocking(
     # Target the middle of the rate limiter's insert-sample balance window.
     sample_sizes.append(
         max(1, int(
-            (rate_limiter_info.max_diff - rate_limiter_info.min_diff) / 2)))
+            rate_limiter_info.max_diff/2 - rate_limiter_info.min_diff/2)))
   return modified_tables, sample_sizes
