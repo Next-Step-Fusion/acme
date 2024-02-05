@@ -70,13 +70,20 @@ class MLFlowLogger(base.Logger):
             if isinstance(
                 value, (int, float, np.float16, np.float32, np.float64)
             ) and not np.isnan(value):
-                mlflow.log_metric(os.path.join(self.label,key), value, step=self._step)
+                mlflow.log_metric(self.label+"/"+key, value, step=self._step)
                 written_keys.append(key)
+            if isinstance(value, np.ndarray): # just assume it is numeric for now
+                if value.size==1:
+                    mlflow.log_metric(self.label+"/"+key, value.item(), step=self._step)
+                else:
+                    # Log metrics as 'key_i_j': value[i,j] etc
+                    mlflow.log_metrics({f"{self.label}/{key}_{'_'.join(map(str,idx))}":value[idx]
+                                        for idx in np.ndindex(value.shape)})
             # Maybe it is a better solution to pass `step` in `data` instead
             # but this requires explicit intervention from the calling object
             # Write files as artifacts
             if isinstance(value, os.PathLike):
-                mlflow.log_artifact(value,key)
+                mlflow.log_artifact(value,self.label+"/"+key)
                 written_keys.append(key)
 
         # Write the remaining data as a dict.
