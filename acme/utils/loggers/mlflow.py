@@ -79,6 +79,7 @@ class MLFlowLogger(base.Logger):
                     # Log metrics as 'key_i_j': value[i,j] etc
                     mlflow.log_metrics({f"{self.label}/{key}_{'_'.join(map(str,idx))}":value[idx]
                                         for idx in np.ndindex(value.shape)})
+                written_keys.append(key)
             # Maybe it is a better solution to pass `step` in `data` instead
             # but this requires explicit intervention from the calling object
             # Write files as artifacts
