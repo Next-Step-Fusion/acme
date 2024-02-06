@@ -23,6 +23,7 @@ import numpy as np
 
 from absl import logging
 from matplotlib.figure import Figure
+from mlflow.tracking.client import MlflowClient
 from pandas import DataFrame
 
 from acme.utils.loggers import base
@@ -43,7 +44,7 @@ class MLFlowLogger(base.Logger):
         """Instantiates the logger."""
 
         self.label = label
-        self._run_id = mlflow_run_id
+        self._run_id = mlflow_run_id or (mlflow.active_run() or mlflow.start_run()).info.run_id
         self._last_log_time = time.time() - time_delta
         self._time_delta = time_delta
         self._add_uid = add_uid
@@ -68,48 +69,48 @@ class MLFlowLogger(base.Logger):
 
         data = base.to_numpy(data)
 
-        with mlflow.start_run(run_id=self._run_id):
-            written_keys = []
-            for key, value in data.items():
-                # Write numeric data as metrics
-                if isinstance(
-                    value, (int, float, np.float16, np.float32, np.float64)
-                ) and not np.isnan(value):
-                    mlflow.log_metric(self.label+"/"+key, value, step=self._step)
-                    written_keys.append(key)
-                # Write arrays
-                if isinstance(value, np.ndarray): # just assume it is numeric for now
-                    if value.size==1:
-                        mlflow.log_metric(self.label+"/"+key, value.item(), step=self._step)
-                    else:
-                        # Log metrics as 'key_i_j': value[i,j] etc
-                        mlflow.log_metrics({f"{self.label}/{key}_{'_'.join(map(str,idx))}":value[idx]
-                                            for idx in np.ndindex(value.shape)})
-                    written_keys.append(key)
-                # Write figures
-                if isinstance(value, Figure):
-                    mlflow.log_figure(value, f"{key}_{self._step}.png")
-                    written_keys.append(key)
-                # Write dataframes
-                if isinstance(value, DataFrame):
-                    mlflow.log_table(value, f"{key}_{self._step}.json")
-                    written_keys.append(key)
-                # Write files as artifacts
-                if isinstance(value, os.PathLike):
-                    if os.path.isfile(value):
-                        mlflow.log_artifact(value, os.path.join(self.label,self._step,key))
-                    elif os.path.isdir(value):
-                        mlflow.log_artifacts(value, os.path.join(self.label,self._step,key))
-                    else:
-                        logging.warn(f"Could not find path at {value}")
-                    written_keys.append(key)
-                        
+        written_keys = []
+        for key, value in data.items():
+            # Write numeric data as metrics
+            if isinstance(
+                value, (int, float, np.float16, np.float32, np.float64)
+            ) and not np.isnan(value):
+                mlflow.log_metric(self.label+"/"+key, value, step=self._step, run_id=self._run_id)
+                written_keys.append(key)
+            # Write arrays
+            if isinstance(value, np.ndarray): # just assume it is numeric for now
+                if value.size==1:
+                    mlflow.log_metric(self.label+"/"+key, value.item(), step=self._step, run_id=self._run_id)
+                else:
+                    # Log metrics as 'key_i_j': value[i,j] etc
+                    mlflow.log_metrics({f"{self.label}/{key}_{'_'.join(map(str,idx))}":value[idx]
+                                        for idx in np.ndindex(value.shape)}, run_id=self._run_id)
+                written_keys.append(key)
+            # Write figures
+            if isinstance(value, Figure):
+                # to be fixed upstream: mlflow.log_figure() does not allow to set run_id
+                MlflowClient().log_figure(self._run_id, value, f"{key}_{self._step}.png")
+                written_keys.append(key)
+            # Write dataframes
+            if isinstance(value, DataFrame):
+                mlflow.log_table(value, f"{key}_{self._step}.json", run_id=self._run_id)
+                written_keys.append(key)
+            # Write files as artifacts
+            if isinstance(value, os.PathLike):
+                if os.path.isfile(value):
+                    mlflow.log_artifact(value, os.path.join(self.label,self._step,key), run_id=self._run_id)
+                elif os.path.isdir(value):
+                    mlflow.log_artifacts(value, os.path.join(self.label,self._step,key), run_id=self._run_id)
+                else:
+                    logging.warn(f"Could not find path at {value}")
+                written_keys.append(key)
+                    
 
-            # Write the remaining data as a dict.
-            # Not sure how fast the list comprehension is here.
-            if len(data)>len(written_keys):
-                mlflow.log_dict({k:data[k] for k in data if k not in written_keys}, 
-                                os.path.join(self.label,f"data_{self._step}.json"))
+        # Write the remaining data as a dict.
+        # Not sure how fast the list comprehension is here.
+        if len(data)>len(written_keys):
+            mlflow.log_dict({k:data[k] for k in data if k not in written_keys}, 
+                            os.path.join(self.label,f"data_{self._step}.json"), run_id=self._run_id)
 
         self._step += 1
 
