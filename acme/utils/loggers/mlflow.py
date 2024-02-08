@@ -40,6 +40,7 @@ class MLFlowLogger(base.Logger):
                  add_uid: bool = True,
                  mlflow_url: str = MLFLOW_TRACKING_URL,
                  mlflow_run_id: Optional[str] = None,
+                 add_step_idx: bool = False,
                  ):
         """Instantiates the logger."""
 
@@ -48,6 +49,7 @@ class MLFlowLogger(base.Logger):
         self._last_log_time = time.time() - time_delta
         self._time_delta = time_delta
         self._add_uid = add_uid
+        self._add_step_idx = add_step_idx
         self._step = 0 # ad-hoc solution to tracking step index
 
         if "MLFLOW_TRACKING_URI" not in os.environ:
@@ -68,6 +70,8 @@ class MLFlowLogger(base.Logger):
         self._last_log_time = now
 
         data = base.to_numpy(data)
+        unique_fname = f"_{self._step}" if self._add_step_idx else ""
+        unique_path = (str(self._step),) if self._add_step_idx else ()
 
         written_keys = []
         for key, value in data.items():
@@ -89,18 +93,18 @@ class MLFlowLogger(base.Logger):
             # Write figures
             if isinstance(value, Figure):
                 # to be fixed upstream: mlflow.log_figure() does not allow to set run_id
-                MlflowClient().log_figure(self._run_id, value, f"{key}_{self._step}.png")
+                MlflowClient().log_figure(self._run_id, value, f"{key}{unique_fname}.png")
                 written_keys.append(key)
             # Write dataframes
             if isinstance(value, DataFrame):
-                mlflow.log_table(value, f"{key}_{self._step}.json", run_id=self._run_id)
+                mlflow.log_table(value, f"{key}{unique_fname}.json", run_id=self._run_id)
                 written_keys.append(key)
             # Write files as artifacts
             if isinstance(value, os.PathLike):
                 if os.path.isfile(value):
-                    mlflow.log_artifact(value, os.path.join(self.label,self._step,key), run_id=self._run_id)
+                    mlflow.log_artifact(value, os.path.join(self.label,*unique_path,key), run_id=self._run_id)
                 elif os.path.isdir(value):
-                    mlflow.log_artifacts(value, os.path.join(self.label,self._step,key), run_id=self._run_id)
+                    mlflow.log_artifacts(value, os.path.join(self.label,*unique_path,key), run_id=self._run_id)
                 else:
                     logging.warn(f"Could not find path at {value}")
                 written_keys.append(key)
@@ -110,7 +114,7 @@ class MLFlowLogger(base.Logger):
         # Not sure how fast the list comprehension is here.
         if len(data)>len(written_keys):
             mlflow.log_dict({k:data[k] for k in data if k not in written_keys}, 
-                            os.path.join(self.label,f"data_{self._step}.json"), run_id=self._run_id)
+                            os.path.join(self.label,f"data{unique_fname}.json"), run_id=self._run_id)
 
         self._step += 1
 
