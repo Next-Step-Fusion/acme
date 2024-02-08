@@ -100,14 +100,13 @@ class MLFlowLogger(base.Logger):
                 mlflow.log_table(value, f"{key}{unique_fname}.json", run_id=self._run_id)
                 written_keys.append(key)
             # Write files as artifacts
-            if isinstance(value, os.PathLike):
+            if isinstance(value, (str, os.PathLike)): # check for paths 
                 if os.path.isfile(value):
                     mlflow.log_artifact(value, os.path.join(self.label,*unique_path,key), run_id=self._run_id)
+                    written_keys.append(key)
                 elif os.path.isdir(value):
                     mlflow.log_artifacts(value, os.path.join(self.label,*unique_path,key), run_id=self._run_id)
-                else:
-                    logging.warn(f"Could not find path at {value}")
-                written_keys.append(key)
+                    written_keys.append(key)                
                     
 
         # Write the remaining data as a dict.
