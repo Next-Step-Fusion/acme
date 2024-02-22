@@ -57,10 +57,14 @@ class MPOBuilder(builders.ActorLearnerBuilder):
                config: mpo_config.MPOConfig,
                *,
                sgd_steps_per_learner_step: int = 8,
-               max_learner_steps: Optional[int] = None):
+               max_learner_steps: Optional[int] = None,
+               profiler_trace_dir: Optional[str] = None,
+               profile_step: int = 40):
     self.config = config
     self.sgd_steps_per_learner_step = sgd_steps_per_learner_step
     self._max_learner_steps = max_learner_steps
+    self._profiler_trace_dir = profiler_trace_dir 
+    self._profile_step = profile_step
 
   def make_policy(
       self,
@@ -195,6 +199,8 @@ class MPOBuilder(builders.ActorLearnerBuilder):
           counter=counter,
           logger=logger,
           devices=jax.devices(),
+          profiler_trace_dir=self._profiler_trace_dir,
+          profile_step=self._profile_step,
       )
     return learner
 

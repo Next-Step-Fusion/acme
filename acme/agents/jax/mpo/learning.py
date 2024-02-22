@@ -116,6 +116,8 @@ class MPOLearner(acme.Learner):
       counter: Optional[counting.Counter] = None,
       logger: Optional[loggers.Logger] = None,
       devices: Optional[Sequence[jax.Device]] = None,
+      profiler_trace_dir: Optional[str] = None,
+      profile_step: int = 40,
   ):
     self._critic_type = critic_type
     self._discrete_policy = discrete_policy
@@ -281,6 +283,12 @@ class MPOLearner(acme.Learner):
     # fill the replay buffer.
     self._timestamp = None
     self._current_step = 0
+
+    # Profiler setup
+    self._yet_to_profile = profiler_trace_dir is not None
+    self._profiler_trace_dir = profiler_trace_dir
+    self._profile_step = profile_step
+
 
   def _distributional_loss(self, prediction: mpo_types.DistributionLike,
                            target: chex.Array):
@@ -688,6 +696,9 @@ class MPOLearner(acme.Learner):
   def step(self):
     """Perform one learner step, which in general does multiple SGD steps."""
     with jax.profiler.StepTraceAnnotation('step', step_num=self._current_step):
+      # Record trace if required
+      if self._yet_to_profile and self._current_step>self._profile_step:
+        jax.profiler.start_trace(self._profiler_trace_dir)
       # Get data from replay (dropping extras if any). Note there is no
       # extra data here because we do not insert any into Reverb.
       sample = next(self._iterator)
@@ -718,6 +729,11 @@ class MPOLearner(acme.Learner):
       # Attempts to write the logs.
       if self._logger:
         self._logger.write({**metrics, **counts})
+
+      # Stop the trace
+      if self._yet_to_profile and self._current_step>self._profile_step:
+        jax.profiler.stop_trace()
+        self._yet_to_profile = False
 
   def get_variables(self, names: List[str]) -> network_lib.Params:
     params = mpo_utils.get_from_first_device(self._state.target_params)
