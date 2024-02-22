@@ -17,11 +17,12 @@
 import datetime
 import os
 import pickle
-from typing import Any
+from typing import Any, Optional
 
 from absl import logging
 from acme import core
 from acme.tf import savers as tf_savers
+from acme.utils import signals
 import jax
 import numpy as np
 import tree
@@ -93,4 +94,27 @@ class Checkpointer(tf_savers.Checkpointer):
                      **tf_checkpointer_kwargs)
 
 
-CheckpointingRunner = tf_savers.CheckpointingRunner
+# Include JAX learner profiling in the runner as a temporary solution.
+class CheckpointingRunner(tf_savers.CheckpointingRunner):
+
+  def __init__(self, *args, profile_port: Optional[int] = None, **kwargs):
+    super().__init__(*args, **kwargs)
+    self._port = profile_port
+  
+  
+  # Handle preemption signal. Note that this must happen in the main thread.
+  def _signal_handler(self):
+    logging.info('Caught SIGTERM: forcing a checkpoint save.')
+    self._checkpointer.save(force=True)
+    if self._port is not None:
+      jax.profiler.stop_server()
+
+  
+  def run(self):
+    """Runs the checkpointer."""
+    with signals.runtime_terminator(self._signal_handler):
+      if self._port is not None:
+        jax.profiler.start_server(self._port)
+      while True:
+        self.step()
+

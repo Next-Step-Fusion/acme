@@ -194,6 +194,7 @@ def make_distributed_experiment(
             max_to_keep=checkpointing.max_to_keep,
             keep_checkpoint_every_n_hours=checkpointing.keep_checkpoint_every_n_hours,
             checkpoint_ttl_seconds=checkpointing.checkpoint_ttl_seconds,
+            profile_port=profile_learner_port,
         )
       else:
         learner.restore(primary_learner.save())
@@ -201,8 +202,9 @@ def make_distributed_experiment(
         # primary one. Further synchronization should be handled by the learner
         # properly doing a pmap/pmean on the loss/gradients, respectively.
 
-    if profile_learner_port is not None:
-      learner = profiler.ProfilingServerRunner(learner, profile_learner_port)   
+    # This doesn't work due to how CourierClient resolves class methods.
+    # if profile_learner_port is not None:
+    #   learner = profiler.ProfilingServerRunner(learner, profile_learner_port)   
     
     return learner
 
