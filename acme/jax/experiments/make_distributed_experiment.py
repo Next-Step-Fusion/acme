@@ -25,6 +25,7 @@ from acme.agents.jax import actor_core
 from acme.agents.jax import builders
 from acme.jax import inference_server as inference_server_lib
 from acme.jax import networks as networks_lib
+from acme.jax import profiler
 from acme.jax import savers
 from acme.jax import utils
 from acme.jax import variable_utils
@@ -55,6 +56,7 @@ def make_distributed_experiment(
     num_inference_servers: int = 1,
     multiprocessing_colocate_actors: bool = False,
     multithreading_colocate_learner_and_reverb: bool = False,
+    profile_learner_port: Optional[int] = None, 
     make_snapshot_models: Optional[
         config.SnapshotModelFactory[builders.Networks]
     ] = None,
@@ -199,6 +201,9 @@ def make_distributed_experiment(
         # primary one. Further synchronization should be handled by the learner
         # properly doing a pmap/pmean on the loss/gradients, respectively.
 
+    if profile_learner_port is not None:
+      learner = profiler.ProfilingServerRunner(learner, profile_learner_port)   
+    
     return learner
 
   def build_inference_server(
