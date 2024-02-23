@@ -29,7 +29,7 @@ from pandas import DataFrame
 from acme.utils.loggers import base
 
 
-MLFLOW_TRACKING_URL = "http://127.0.0.1:5000/" # default value
+MLFLOW_TRACKING_URL = os.environ.get("MLFLOW_TRACKING_URI","http://127.0.0.1:5000/")
 
 class MLFlowLogger(base.Logger):
     """An MLFlow logger."""
